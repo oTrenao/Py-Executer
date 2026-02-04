@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Py Executer Ultimate</title>
+    
+    <hta:application 
+        id="oApp" 
+        applicationname="Py Executer Ultimate" 
+        border="thick" 
+        caption="yes" 
+        icon="cmd.exe" 
+        showintaskbar="yes" 
+        singleinstance="yes" 
+        sysmenu="yes" 
+        windowstate="normal"
+        contextmenu="no"
+        selection="no"
+        scroll="no"
+        maximizebutton="yes"
+        navigable="yes">
+
+    <style>
+        /* --- DESIGN SYSTEM V16 (Dark Modern Refined) --- */
+        * { box-sizing: border-box; user-select: none; cursor: default; margin: 0; padding: 0; }
+        
+        body { 
+            background-color: #0d1117; 
+            color: #c9d1d9; 
+            font-family: 'Segoe UI', 'Roboto', sans-serif; 
+            overflow: hidden; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #58a6ff; }
+
+        /* HEADER */
+        .header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 0 15px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        
+        .brand { font-size: 16px; font-weight: 700; color: #58a6ff; display: flex; align-items: center; gap: 8px; }
+        .brand span { color: #8b949e; font-size: 11px; border: 1px solid #30363d; padding: 1px 5px; border-radius: 4px; }
+
+        .env-indicator {
+            font-size: 11px; padding: 4px 10px; border-radius: 12px;
+            background: #21262d; border: 1px solid #30363d; color: #8b949e;
+            transition: all 0.3s; display: flex; align-items: center; gap: 6px;
+        }
+        .env-indicator.venv { background: #1f6feb22; color: #58a6ff; border-color: #1f6feb; }
+        .env-indicator.global { background: #d2992222; color: #d29922; border-color: #d29922; }
+
+        /* LAYOUT */
+        .main-wrapper { display: flex; flex: 1; overflow: hidden; }
+        
+        .sidebar {
+            width: 260px;
+            background: #0d1117;
+            border-right: 1px solid #30363d;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .panel { background: #161b22; border: 1px solid #30363d; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; }
+        .panel-head { background: #21262d; padding: 6px 10px; font-size: 11px; font-weight: 700; color: #8b949e; text-transform: uppercase; border-bottom: 1px solid #30363d; }
+        .panel-body { padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+
+        select, input[type="text"] {
+            background: #0d1117; border: 1px solid #30363d; color: #c9d1d9;
+            padding: 6px; font-size: 11px; border-radius: 4px; outline: none; width: 100%;
+            font-family: 'Consolas', monospace;
+        }
+        select:focus, input:focus { border-color: #58a6ff; }
+
+        button {
+            background: #21262d; border: 1px solid #30363d; color: #c9d1d9;
+            padding: 6px 12px; font-size: 11px; font-weight: 600; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        button:hover { background: #30363d; border-color: #8b949e; }
+        button:active { transform: translateY(1px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-primary { background: #238636; border-color: #2ea043; color: white; }
+        .btn-primary:hover { background: #2ea043; border-color: #3fb950; }
+        .btn-danger { background: #da3633; border-color: #f85149; color: white; }
+        .btn-danger:hover { background: #f85149; }
+        .btn-accent { background: #1f6feb; border-color: #388bfd; color: white; }
+        .btn-accent:hover { background: #388bfd; }
+        .btn-upx { background: #6f42c1; border-color: #8957e5; color: white; }
+
+        .btn-group { display: flex; gap: 5px; }
+        .btn-group .fill { flex: 1; }
+
+        #fileList {
+            height: 100%; min-height: 150px; border: none; background: transparent; color: #c9d1d9; outline: none;
+            font-family: 'Consolas', monospace; font-size: 12px;
+        }
+        #fileList option { padding: 4px 8px; border-bottom: 1px solid #21262d; }
+        #fileList option:checked { background: #1f6feb; color: white; }
+
+        .content { flex: 1; display: flex; flex-direction: column; background: #0d1117; overflow: hidden; }
+
+        .tabs { display: flex; background: #161b22; border-bottom: 1px solid #30363d; height: 36px; }
+        .tab {
+            padding: 0 15px; display: flex; align-items: center; font-size: 12px; font-weight: 600;
+            color: #8b949e; cursor: pointer; border-right: 1px solid #30363d; transition: 0.2s;
+        }
+        .tab:hover { background: #21262d; color: #c9d1d9; }
+        .tab.active { background: #0d1117; color: #58a6ff; border-top: 2px solid #58a6ff; }
+
+        .tab-panel { display: none; padding: 15px; flex-direction: column; gap: 15px; overflow-y: auto; height: 100%; }
+        .tab-panel.active { display: flex; }
+
+        .chk-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8b949e; cursor: pointer; }
+        .chk-row:hover { color: #c9d1d9; }
+        .chk-row.disabled { opacity: 0.5; pointer-events: none; }
+
+        .console-wrapper {
+            height: 180px; background: #010409; border-top: 1px solid #30363d;
+            display: flex; flex-direction: column; flex-shrink: 0;
+        }
+        .console-header {
+            padding: 4px 10px; background: #161b22; font-size: 10px; color: #8b949e; font-weight: bold;
+            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d;
+        }
+        #txtConsole {
+            flex: 1; background: transparent; border: none; color: #3fb950;
+            padding: 8px; font-family: 'Consolas', monospace; font-size: 11px;
+            overflow-y: auto; resize: none; white-space: pre-wrap; line-height: 1.4;
+        }
+        
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; background: #30363d; }
+        .mt { margin-top: 8px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .alert-box { padding: 8px; background: #21262d; border: 1px solid #30363d; border-radius: 4px; font-size: 11px; color: #8b949e; margin-top: 5px; }
+
+        /* Grid Compacto Build Tab com Cores de Indicação */
+        #tabBuild { gap: 6px; }
+        #tabBuild .panel { flex: 0 0 auto; }
+        #tabBuild .panel-body { padding: 10px; gap: 8px; display: flex; flex-direction: column; }
+        #tabBuild label { font-size: 10px; color: #8b949e; display: block; margin-bottom: 3px; font-weight: 600; }
+        #tabBuild select,
+        #tabBuild input[type="text"] {
+            padding: 6px 8px;
+            font-size: 10px;
+            height: 28px;
+        }
+        #tabBuild button { padding: 6px 10px; font-size: 10px; height: 28px; }
+        #tabBuild .chk-row { font-size: 10px; gap: 6px; padding: 4px 0; }
+        #tabBuild .alert-box { padding: 6px 8px; font-size: 9px; margin-top: 0; margin-bottom: 0; }
+        #tabBuild .btn-primary { height: 32px; font-size: 11px; margin-top: 4px; width: 100%; }
+        
+        /* Seções com Cores Indicativas */
+        .build-section { 
+            background: #161b22; 
+            border: 1px solid #30363d; 
+            border-radius: 6px; 
+            padding: 10px; 
+            border-left: 3px solid #8b949e;
+        }
+        .build-section.select { border-left-color: #3fb950; background: #0d191422; }
+        .build-section.remove { border-left-color: #f85149; background: #1f101022; }
+        .build-section.icon { border-left-color: #58a6ff; background: #0d1f3522; }
+        
+        .build-section-title {
+            font-size: 9px;
+            color: #8b949e;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .build-section.select .build-section-title { color: #3fb950; }
+        .build-section.remove .build-section-title { color: #f85149; }
+        .build-section.icon .build-section-title { color: #58a6ff; }
+        
+        .build-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .build-row { display: flex; flex-direction: column; gap: 3px; }
+        .chk-group-build { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    </style>
+
+    <script language="JScript">
+        var fso = new ActiveXObject("Scripting.FileSystemObject");
+        var shell = new ActiveXObject("WScript.Shell");
+        var logTimer = null;
+        var logFile = "runner_log.txt";
+        var isRunning = false;
+        var selectedIconPath = "";
+        
+        var libMap = { 
+            "cv2": "opencv-python", "serial": "pyserial", "PIL": "pillow", "win32api": "pywin32", 
+            "win32con": "pywin32", "win32gui": "pywin32", "bs4": "beautifulsoup4", "sklearn": "scikit-learn", 
+            "yaml": "pyyaml", "discord": "discord.py", "dotenv": "python-dotenv", "yolo": "ultralytics",
+            "tk": "tkinter", "tkinter": "tkinter", "pygame": "pygame", "fitz": "pymupdf"
+        };
+        var stdLibs = "|os|sys|time|datetime|math|random|json|re|subprocess|threading|multiprocessing|socket|";
+
+        function Init() {
+            try {
+                var w = 900, h = 550;
+                window.resizeTo(w, h);
+                window.moveTo((screen.availWidth - w) / 2, (screen.availHeight - h) / 2);
+                shell.CurrentDirectory = fso.GetParentFolderName(document.location.pathname);
+            } catch(e) {}
+
+            LoadFiles();
+            LoadPythonVersions();
+            CheckEnv();
+            CheckUpxPresence();
+            SwitchTab('tabRun');
+            AdjustLayout();
+            window.onresize = AdjustLayout;
+            Log("Py Executer V16 (UPX Ready) inicializado.", "#8b949e");
+            setInterval(CheckEnv, 3000);
+            setInterval(CheckUpxPresence, 5000);
+        }
+
+        function AdjustLayout() {
+            try {
+                var content = document.querySelector(".content");
+                var tabs = document.querySelector(".tabs");
+                var consoleBox = document.querySelector(".console-wrapper");
+                if(!content || !tabs || !consoleBox) return;
+                var h = content.clientHeight - tabs.offsetHeight - consoleBox.offsetHeight;
+                if(h < 120) h = 120;
+                var panels = document.querySelectorAll(".tab-panel");
+                for(var i=0; i<panels.length; i++) {
+                    panels[i].style.height = h + "px";
+                }
+            } catch(e) {}
+        }
+
+        function Log(msg, color) {
+            var c = document.getElementById("txtConsole");
+            var time = new Date().toLocaleTimeString();
+            c.value += "[" + time + "] " + msg + "\n";
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function SwitchTab(id) {
+            var tabs = ["tabRun", "tabBuild", "tabTools", "tabSettings"];
+            for(var i=0; i<tabs.length; i++) {
+                document.getElementById(tabs[i]).className = "tab-panel";
+                document.getElementById("btn_" + tabs[i]).className = "tab";
+            }
+            document.getElementById(id).className = "tab-panel active";
+            document.getElementById("btn_" + id).className = "tab active";
+            AdjustLayout();
+        }
+
+        function CheckUpxPresence() {
+            var upxExists = fso.FileExists("upx.exe");
+            var chk = document.getElementById("chkUpx");
+            var btnDownload = document.getElementById("btnDownloadUpx");
+            var warning = document.getElementById("upxWarning");
+            
+            if(upxExists) {
+                chk.disabled = false;
+                chk.parentNode.className = "chk-row";
+                if(btnDownload) btnDownload.style.display = "none";
+                if(chk.checked) warning.style.display = "block"; else warning.style.display = "none";
+            } else {
+                chk.checked = false;
+                chk.disabled = true;
+                chk.parentNode.className = "chk-row disabled";
+                if(btnDownload) btnDownload.style.display = "block";
+                warning.style.display = "none";
+            }
+        }
+
+        function DownloadUpx() {
+            var url = "https://github.com/upx/upx/releases";
+            shell.Run(url);
+        }
+
+        function HandleNuitkaToggle() {
+            var nuitka = document.getElementById("chkNuitka");
+            var warningDiv = document.getElementById("nuitkaWarning");
+            var cacheWarning = document.getElementById("nuitkaCacheWarning");
+            var cleanCacheChk = document.getElementById("chkNuitkaCleanCache");
+            
+            if(nuitka.checked) {
+                warningDiv.style.display = "block";
+                if(!cleanCacheChk.checked) {
+                    cacheWarning.style.display = "block";
+                } else {
+                    cacheWarning.style.display = "none";
+                }
+            } else {
+                warningDiv.style.display = "none";
+                cacheWarning.style.display = "none";
+            }
+        }
+        
+        function HandleNuitkaCacheToggle() {
+            var cleanCache = document.getElementById("chkNuitkaCleanCache");
+            var cacheWarning = document.getElementById("nuitkaCacheWarning");
+            var nuitka = document.getElementById("chkNuitka");
+            
+            if(nuitka.checked) {
+                if(cleanCache.checked) {
+                    cacheWarning.style.display = "none";
+                } else {
+                    cacheWarning.style.display = "block";
+                }
+            }
+        }
+
+        function LoadFiles() {
+            var sel = document.getElementById("fileList");
+            var current = sel.value;
+            sel.options.length = 0;
+            try {
+                var folder = fso.GetFolder(".");
+                var files = new Enumerator(folder.Files);
+                for(; !files.atEnd(); files.moveNext()) {
+                    var n = files.item().Name;
+                    if(n.toLowerCase().indexOf(".py") > -1) {
+                        var opt = document.createElement("option");
+                        opt.text = "🐍 " + n; opt.value = n; sel.add(opt);
+                    }
+                }
+            } catch(e) { Log("Erro ao listar: " + e.message); }
+            if(current) sel.value = current;
+        }
+
+        function CreateNew() {
+            var n = prompt("Nome do Script (sem .py):", "novo_app");
+            if(!n) return;
+            n = n + ".py";
+            if(fso.FileExists(n)) { alert("Arquivo já existe!"); return; }
+            var tpl = "import time\n\nprint('PyExecuter V16')\n\ninput('Enter para sair...')";
+            var f = fso.CreateTextFile(n, true); f.Write(tpl); f.Close();
+            LoadFiles();
+        }
+
+        function OpenCode() {
+            var f = document.getElementById("fileList").value;
+            if(f) shell.Run('notepad.exe "' + f + '"', 1, false);
+        }
+
+        function LoadPythonVersions() {
+            var cmb = document.getElementById("cmbPython");
+            cmb.options.length = 0;
+            var optG = document.createElement("option"); optG.text = "🌐 Global (PATH)"; optG.value = "global"; cmb.add(optG);
+            var paths = ["C:\\Python312", "C:\\Python311", "C:\\Python310"];
+            try {
+                var local = shell.ExpandEnvironmentStrings("%LocalAppData%\\Programs\\Python");
+                if(fso.FolderExists(local)) {
+                    var sub = new Enumerator(fso.GetFolder(local).SubFolders);
+                    for(; !sub.atEnd(); sub.moveNext()) paths.push(sub.item().Path);
+                }
+            } catch(e){}
+            for(var i=0; i<paths.length; i++) {
+                var exe = paths[i] + "\\python.exe";
+                if(fso.FileExists(exe)) {
+                    var folderName = paths[i].split("\\").pop(); // Ex: "Python311"
+                    var o = document.createElement("option"); 
+                    o.text = "🐍 " + folderName; 
+                    o.value = exe; 
+                    cmb.add(o);
+                }
+            }
+        }
+
+        function GetEnvInfo() {
+            var venvs = ["venv", ".venv", "env"];
+            for(var i=0; i<venvs.length; i++) {
+                if(fso.FolderExists(venvs[i]) && fso.FileExists(venvs[i] + "\\Scripts\\activate.bat")) {
+                    return { type: "venv", path: venvs[i], cmd: 'call "' + venvs[i] + '\\Scripts\\activate.bat" && ' };
+                }
+            }
+            var sel = document.getElementById("cmbPython").value;
+            if(sel == "global") return { type: "global", path: "PATH", cmd: "python " };
+            return { type: "custom", path: sel, cmd: '"' + sel + '" ' };
+        }
+
+        function CheckEnv() {
+            var env = GetEnvInfo();
+            var el = document.getElementById("envStatus");
+            var btnC = document.getElementById("btnCreateVenv");
+            var btnD = document.getElementById("btnDelVenv");
+            var cmbPython = document.getElementById("cmbPython");
+
+            if(env.type == "venv") {
+                el.innerText = "⚡ VENV ATIVA (" + env.path + ")";
+                el.className = "env-indicator venv";
+                btnC.disabled = true; btnD.disabled = false;
+            } else {
+                var pythonVersion = cmbPython.options[cmbPython.selectedIndex].text;
+                el.innerText = pythonVersion || "🌐 GLOBAL / PATH";
+                el.className = "env-indicator global";
+                btnC.disabled = false; btnD.disabled = true;
+            }
+        }
+
+        function ToggleVenv(action) {
+            if(action == "create") {
+                var py = document.getElementById("cmbPython").value;
+                var cmd = (py == "global" ? "python" : '"' + py + '"');
+                RunHidden("Criando VENV...", cmd + " -m venv venv && echo [OK] Venv criada.");
+            } else {
+                if(confirm("Apagar VENV?")) RunHidden("Removendo VENV...", "rmdir /s /q venv && rmdir /s /q .venv && echo [OK] Removido.");
+            }
+        }
+
+        function RunHidden(title, cmd) {
+            Log("--- " + title + " ---");
+            try {
+                var bat = fso.CreateTextFile("runner_temp.bat", true);
+                bat.WriteLine("@echo off");
+                bat.WriteLine("chcp 65001 > nul"); 
+                bat.WriteLine(cmd + " >> \"" + logFile + "\" 2>&1");
+                bat.WriteLine("echo [DONE] >> \"" + logFile + "\"");
+                bat.Close();
+                var f = fso.CreateTextFile(logFile, true); f.Write(""); f.Close();
+                shell.Run("runner_temp.bat", 0, false);
+                StartMonitor();
+            } catch(e) { Log("Erro: " + e.message); }
+        }
+
+        function StartMonitor() {
+            if(logTimer) clearInterval(logTimer);
+            isRunning = true;
+            document.getElementById("btnStop").disabled = false;
+            document.getElementById("statusMsg").innerText = "Executando...";
+            logTimer = setInterval(function(){
+                if(fso.FileExists(logFile)) {
+                    try {
+                        var f = fso.OpenTextFile(logFile, 1);
+                        var txt = f.ReadAll(); f.Close();
+                        var box = document.getElementById("txtConsole");
+                        if(box.value.length != txt.length) { box.value = txt; box.scrollTop = box.scrollHeight; }
+                        if(txt.indexOf("[DONE]") > -1) {
+                            clearInterval(logTimer);
+                            isRunning = false;
+                            document.getElementById("btnStop").disabled = true;
+                            document.getElementById("statusMsg").innerText = "Pronto";
+                        }
+                    } catch(e){}
+                }
+            }, 500);
+        }
+
+        function StopProcess() {
+            shell.Run('taskkill /F /IM python.exe /T', 0, false);
+            shell.Run('taskkill /F /IM py.exe /T', 0, false);
+            if(logTimer) clearInterval(logTimer);
+            isRunning = false;
+            document.getElementById("btnStop").disabled = true;
+            document.getElementById("statusMsg").innerText = "Parado";
+            Log("[INTERROMPIDO]");
+        }
+
+        function RunScript() {
+            var f = document.getElementById("fileList").value;
+            if(!f) return;
+            var env = GetEnvInfo();
+            var runCmd = (env.type == "venv") ? env.cmd + 'python -u "' + f + '"' : (env.type=="global"?"python":'"'+env.path+'"') + ' -u "' + f + '"';
+            
+            if(document.getElementById("chkInteractive").checked) {
+                shell.Run('cmd /c start "PyExec V16 - ' + f + '" cmd /k "' + runCmd + '"', 1, false);
+                Log("Iniciado modo interativo.");
+            } else {
+                RunHidden("Executando " + f, runCmd);
+            }
+        }
+
+        function SelectIcon() { document.getElementById("fileIcon").click(); }
+        function SetIcon() { selectedIconPath = document.getElementById("fileIcon").value; if(selectedIconPath) Log("Ícone: " + selectedIconPath); }
+
+        function BuildExe() {
+            var f = document.getElementById("fileList").value;
+            if(!f) return;
+            var mode = document.getElementById("cmbBuildMode").value;
+            var consoleMode = document.getElementById("chkNoConsole").checked ? "--noconsole" : "--console";
+            var useNuitka = document.getElementById("chkNuitka").checked;
+            var usePyArmor = document.getElementById("chkPyArmor").checked;
+            var useUpx = document.getElementById("chkUpx").checked && !document.getElementById("chkUpx").disabled;
+            var cleanBuild = document.getElementById("chkCleanBuild").checked;
+            var env = GetEnvInfo();
+            
+            var iconCmd = ""; var preCmd = "";
+            if(selectedIconPath) {
+                var ext = selectedIconPath.split('.').pop().toLowerCase();
+                if(ext != "ico") {
+                    var pyCode = "from PIL import Image; img = Image.open(r'" + selectedIconPath + "'); img.save('temp_icon.ico', sizes=[(256,256)])";
+                    var converter = env.type == "venv" ? env.cmd + 'python -c "' + pyCode + '"' : 'python -c "' + pyCode + '"';
+                    preCmd = converter + " && ";
+                    iconCmd = ' --icon="temp_icon.ico" ';
+                } else { iconCmd = ' --icon="' + selectedIconPath + '" '; }
+            }
+
+            var upxCmd = "";
+            if(useUpx) {
+                upxCmd = " --upx-dir . ";
+                Log("Compressão UPX Habilitada.");
+            } else {
+                upxCmd = " --noupx ";
+            }
+
+            // Processar collect e exclude
+            var collectCmd = "";
+            var collectInput = document.getElementById("txtCollect").value.trim();
+            if(collectInput) {
+                var collectModules = collectInput.split(/\s+/);
+                for(var i=0; i<collectModules.length; i++) {
+                    if(collectModules[i]) collectCmd += " --collect-all " + collectModules[i];
+                }
+                Log("Coletando módulos: " + collectInput);
+            }
+
+            var excludeCmd = "";
+            var excludeInput = document.getElementById("txtExclude").value.trim();
+            if(excludeInput) {
+                var excludeModules = excludeInput.split(/\s+/);
+                for(var i=0; i<excludeModules.length; i++) {
+                    if(excludeModules[i]) excludeCmd += " --exclude-module " + excludeModules[i];
+                }
+                Log("Excluindo módulos: " + excludeInput);
+            }
+
+            var exeName = f.replace(".py","");
+            var fullCmd = "";
+
+            // Nuitka tem prioridade sobre PyInstaller
+            if(useNuitka) {
+                Log("Nuitka: Compilando para C++ nativo...");
+                var nuitkaMode = mode == "--onefile" ? "--onefile" : "--standalone";
+                var nuitkaConsole = document.getElementById("chkNoConsole").checked ? "--windows-console-mode=disable" : "--windows-console-mode=force";
+                var cleanCache = document.getElementById("chkNuitkaCleanCache").checked;
+                
+                // Corrigir caminho do ícone com aspas para suportar espaços
+                var nuitkaIcon = "";
+                if(selectedIconPath) {
+                    nuitkaIcon = ' --windows-icon-from-ico="' + selectedIconPath + '"';
+                }
+                
+                // Usar diretório temporário otimizado (C:\TempBuild)
+                var nuitkaBuildDir = "C:\\TempBuild";
+                
+                // Adicionar --clean-cache=all na primeira compilação ou quando solicitado
+                var cacheOption = cleanCache ? " --clean-cache=all" : "";
+                
+                if(cleanCache) {
+                    Log("Nuitka: Limpando cache - primeira compilação ou build limpo");
+                } else {
+                    Log("Nuitka: Aproveitando cache para compilação mais rápida");
+                }
+                
+                // Usar python -m nuitka para garantir que o módulo seja encontrado
+                var nuitkaCmd = "python -m nuitka --standalone " + nuitkaMode + " " + nuitkaConsole + nuitkaIcon + cacheOption + " --assume-yes-for-downloads --output-dir=\"" + nuitkaBuildDir + "\"";
+                
+                // Detectar plugins necessários
+                var importsContent = "";
+                try {
+                    var stream = fso.OpenTextFile(f, 1);
+                    importsContent = stream.ReadAll(); stream.Close();
+                } catch(e) {}
+                
+                var pluginsNeeded = [];
+                var tkinterNeeded = (importsContent.indexOf("tkinter") > -1 || importsContent.indexOf("Tkinter") > -1 || importsContent.indexOf("tk ") > -1);
+                var djangoNeeded = (importsContent.indexOf("django") > -1);
+                var torchNeeded = (importsContent.indexOf("torch") > -1);
+                var numpyNeeded = (importsContent.indexOf("numpy") > -1);
+                var pandasNeeded = (importsContent.indexOf("pandas") > -1);
+                
+                if(tkinterNeeded) pluginsNeeded.push("tk-inter");
+                if(djangoNeeded) pluginsNeeded.push("django");
+                if(torchNeeded) pluginsNeeded.push("torch");
+                
+                // Adicionar plugins detectados
+                for(var p=0; p<pluginsNeeded.length; p++) {
+                    nuitkaCmd += " --enable-plugin=" + pluginsNeeded[p];
+                    Log("Plugin Nuitka ativado: " + pluginsNeeded[p]);
+                }
+                
+                // Seguir imports para módulos de dados (desnecessário em --onefile)
+                // Nuitka já segue todos os imports automaticamente em modo --onefile
+                // if(numpyNeeded || pandasNeeded) {
+                //     nuitkaCmd += " --follow-imports";
+                // }
+                
+                // Plugin inclusions para módulos comuns
+                var collectInput = document.getElementById("txtCollect").value.trim();
+                if(collectInput) {
+                    var collectModules = collectInput.split(/\s+/);
+                    for(var i=0; i<collectModules.length; i++) {
+                        if(collectModules[i]) nuitkaCmd += " --include-package=" + collectModules[i];
+                    }
+                }
+                
+                // Exclusões
+                var excludeInput = document.getElementById("txtExclude").value.trim();
+                if(excludeInput) {
+                    var excludeModules = excludeInput.split(/\s+/);
+                    for(var i=0; i<excludeModules.length; i++) {
+                        if(excludeModules[i]) nuitkaCmd += " --nofollow-import-to=" + excludeModules[i];
+                    }
+                }
+                
+                nuitkaCmd += ' --output-filename="' + exeName + '.exe" "' + f + '"';
+                
+                if(cleanBuild) {
+                    var tempVenv = "build_tmp_" + Math.floor(Math.random()*9999);
+                    var pyBase = document.getElementById("cmbPython").value;
+                    if(pyBase == "global") pyBase = "python"; else pyBase = '"'+pyBase+'"';
+                    var scan = ScanImports(f);
+                    
+                    var pipInstall = "pip install nuitka ordered-set zstandard " + scan;
+                    
+                    var chain = 'echo [1/5] Criando Ambiente Limpo... && ' + pyBase + ' -m venv ' + tempVenv + ' && ' +
+                                'echo [2/5] Ativando Venv... && call ' + tempVenv + '\\Scripts\\activate.bat && ' +
+                                'echo [3/5] Instalando Nuitka e Deps... && ' + pipInstall + ' && ' +
+                                'echo [4/5] Compilando com Nuitka... && ' + nuitkaCmd + ' && ' +
+                                'deactivate && ' +
+                                'echo [5/5] Limpando Ambiente Temp... && rmdir /s /q ' + tempVenv + ' && echo [OK] Build Nuitka concluido.';
+                    RunHidden("Build Nuitka Limpo", chain);
+                } else {
+                    fullCmd = env.cmd + nuitkaCmd;
+                    RunHidden("Build Nuitka", fullCmd);
+                }
+                return; // Sai da função, não usa PyInstaller
+            }
+
+            // Continua com PyInstaller se Nuitka não estiver selecionado
+            var pyInst = "pyinstaller --noconfirm --clean " + mode + " " + consoleMode + iconCmd + upxCmd + collectCmd + excludeCmd + ' --name "' + exeName + '" ';
+            var hidden = " --hidden-import=PIL --hidden-import=cv2 ";
+
+            if(usePyArmor) {
+                Log("PyArmor: Iniciando obfuscação...");
+                // PyArmor v8+ usa: pyarmor gen -O dist/obfuscated arquivo.py
+                var obfDir = "dist\\obfuscated";
+                var armorCmd = "pyarmor gen -O " + obfDir + " " + f;
+                
+                // Após obfuscar, compila o arquivo obfuscado
+                var pyInstCmd = "pyinstaller --noconfirm --clean " + mode + " " + consoleMode + iconCmd + upxCmd + collectCmd + excludeCmd + 
+                               ' --name "' + exeName + '_protected" ' + hidden + 
+                               ' --add-data "' + obfDir + ';pyarmor_runtime_000000" ' +
+                               ' "' + obfDir + '\\' + f + '"';
+                
+                fullCmd = preCmd + env.cmd + armorCmd + " && echo [PyArmor] Obfuscacao concluida && " + 
+                          env.cmd + pyInstCmd;
+            } else {
+                fullCmd = preCmd + env.cmd + pyInst + hidden + ' "' + f + '"';
+            }
+
+            if(cleanBuild) {
+                var tempVenv = "build_tmp_" + Math.floor(Math.random()*9999);
+                var pyBase = document.getElementById("cmbPython").value;
+                if(pyBase == "global") pyBase = "python"; else pyBase = '"'+pyBase+'"';
+                var scan = ScanImports(f);
+                
+                var pipInstall = "pip install pyinstaller pillow " + scan;
+                if(usePyArmor) pipInstall += " pyarmor";
+                
+                // Monta o comando de build removendo o prefixo do ambiente corretamente
+                var buildCmd = "";
+                if(usePyArmor) {
+                    var armorClean = "pyarmor gen -O dist\\obfuscated " + f;
+                    var pyInstClean = "pyinstaller --noconfirm --clean " + mode + " " + consoleMode + iconCmd + upxCmd + collectCmd + excludeCmd + 
+                                     ' --name "' + exeName + '_protected" ' + hidden + 
+                                     ' --add-data "dist\\obfuscated;pyarmor_runtime_000000" ' +
+                                     ' "dist\\obfuscated\\' + f + '"';
+                    buildCmd = preCmd.replace("call ", "").replace(" && ", " && echo [Conv-Icon] OK && ") + 
+                              armorClean + " && echo [PyArmor] OK && " + pyInstClean;
+                } else {
+                    buildCmd = preCmd.replace("call ", "").replace(" && ", " && echo [Conv-Icon] OK && ") + 
+                              pyInst + hidden + ' "' + f + '"';
+                }
+                
+                var chain = 'echo [1/5] Criando Ambiente Limpo... && ' + pyBase + ' -m venv ' + tempVenv + ' && ' +
+                            'echo [2/5] Ativando Venv... && call ' + tempVenv + '\\Scripts\\activate.bat && ' +
+                            'echo [3/5] Instalando Deps... && ' + pipInstall + ' && ' +
+                            'echo [4/5] Compilando... && ' + buildCmd + ' && ' +
+                            'deactivate && ' +
+                            'echo [5/5] Limpando Ambiente Temp... && rmdir /s /q ' + tempVenv + ' && echo [OK] Build concluido e ambiente removido.';
+                RunHidden("Build Limpo", chain);
+            } else {
+                RunHidden("Build", fullCmd);
+            }
+        }
+
+        function ScanImports(file) {
+            if(!file) file = document.getElementById("fileList").value;
+            if(!file) return "";
+            try {
+                var stream = fso.OpenTextFile(file, 1);
+                var content = stream.ReadAll(); stream.Close();
+                var lines = content.split('\n');
+                var reqs = [];
+                for(var i=0; i<lines.length; i++) {
+                    var l = lines[i].trim();
+                    if(l.indexOf("import ") == 0 || l.indexOf("from ") == 0) {
+                        var name = l.split(" ")[1].split(".")[0];
+                        if(stdLibs.indexOf("|"+name+"|") == -1) {
+                            var real = libMap[name] || name;
+                            if(reqs.indexOf(real) == -1) reqs.push(real);
+                        }
+                    }
+                }
+                return reqs.join(" ");
+            } catch(e) { return ""; }
+        }
+
+        function SmartScanCollects() {
+            var file = document.getElementById("fileList").value;
+            if(!file) { alert("Selecione um arquivo Python primeiro!"); return; }
+            
+            try {
+                var stream = fso.OpenTextFile(file, 1);
+                var content = stream.ReadAll(); stream.Close();
+                
+                // Mapa de módulos que geralmente precisam de collect-all
+                var collectNeeded = {
+                    // AI/ML
+                    "ultralytics": true, "torch": true, "tensorflow": true, "keras": true,
+                    "sklearn": "scikit-learn", "cv2": "opencv-python", "PIL": "pillow",
+                    "transformers": true, "onnx": true, "onnxruntime": true,
+                    "onnxruntime_gpu": true, "numpy": false, "pandas": false, // numpy/pandas geralmente não precisam
+                    
+                    // GUI
+                    "tkinter": true, "tk": "tkinter", "pygame": true, "pyqt5": true,
+                    "pyside6": true, "kivy": true, "customtkinter": true, "dearpygui": true,
+                    
+                    // Web/Network
+                    "django": true, "flask": true, "fastapi": true, "selenium": true,
+                    "requests": false, "aiohttp": true, "websockets": true,
+                    
+                    // Serial/Hardware
+                    "serial": "pyserial", "pyserial": true, "usb": "pyusb",
+                    
+                    // Firebase/Cloud
+                    "firebase": "firebase-admin", "firebase_admin": "firebase-admin",
+                    "google": false, "boto3": true,
+                    
+                    // Other
+                    "cryptography": true, "pycryptodome": true, "sqlalchemy": true,
+                    "psycopg2": true, "pymongo": true, "redis": true
+                };
+                
+                var found = [];
+                var lines = content.split('\n');
+                
+                for(var i=0; i<lines.length; i++) {
+                    var l = lines[i].trim();
+                    if(l.indexOf("import ") == 0 || l.indexOf("from ") == 0) {
+                        var parts = l.split(" ");
+                        var moduleName = parts[1].split(".")[0];
+                        
+                        if(collectNeeded.hasOwnProperty(moduleName)) {
+                            var needsCollect = collectNeeded[moduleName];
+                            if(needsCollect === true) {
+                                // Adiciona o nome do módulo como está
+                                if(found.indexOf(moduleName) == -1) found.push(moduleName);
+                            } else if(needsCollect === false) {
+                                // Explicitamente não precisa
+                                continue;
+                            } else if(typeof needsCollect === "string") {
+                                // Usa o nome mapeado (ex: cv2 -> opencv-python)
+                                if(found.indexOf(needsCollect) == -1) found.push(needsCollect);
+                            }
+                        }
+                    }
+                }
+                
+                // Análise adicional: detectar YOLO models
+                if(content.indexOf("YOLO(") > -1 || content.indexOf(".pt") > -1 || content.indexOf(".onnx") > -1 || content.indexOf(".engine") > -1) {
+                    if(found.indexOf("ultralytics") == -1) found.push("ultralytics");
+                }
+                
+                // Detectar torch GPU
+                if(content.indexOf("torch.cuda") > -1 || content.indexOf(".to('cuda')") > -1 || content.indexOf('.to("cuda")') > -1) {
+                    if(found.indexOf("torch") == -1) found.push("torch");
+                }
+                
+                // Detectar Firebase
+                if(content.indexOf("firebase_admin") > -1 || content.indexOf("FIREBASE") > -1) {
+                    if(found.indexOf("firebase-admin") == -1) found.push("firebase-admin");
+                }
+                
+                // Detectar onnxruntime-gpu
+                if(content.indexOf("onnxruntime") > -1 && content.indexOf("gpu") > -1) {
+                    if(found.indexOf("onnxruntime_gpu") == -1 && found.indexOf("onnxruntime-gpu") == -1) {
+                        found.push("onnxruntime_gpu");
+                    }
+                }
+                
+                if(found.length > 0) {
+                    var result = found.join(" ");
+                    document.getElementById("txtCollect").value = result;
+                    Log("✓ Scan completo: " + found.length + " módulo(s) detectado(s) - " + result);
+                    alert("✓ Encontrados " + found.length + " módulo(s) que precisam de collect:\n\n" + found.join("\n") + "\n\nCampo preenchido automaticamente!");
+                } else {
+                    Log("ℹ Nenhum módulo complexo detectado. O arquivo parece usar apenas bibliotecas simples.");
+                    alert("Nenhum módulo que precisa de collect-all foi detectado.\n\nO arquivo usa apenas bibliotecas padrão ou simples que não requerem coleta especial.");
+                }
+                
+            } catch(e) {
+                Log("Erro no scan: " + e.message);
+                alert("Erro ao analisar o arquivo: " + e.message);
+            }
+        }
+
+        function SmartScanExcludes() {
+            var file = document.getElementById("fileList").value;
+            if(!file) { alert("Selecione um arquivo Python primeiro!"); return; }
+            
+            try {
+                var stream = fso.OpenTextFile(file, 1);
+                var content = stream.ReadAll(); stream.Close();
+                
+                // Lista de módulos grandes que podem ser excluídos se não forem usados
+                var excludeCandidates = [
+                    // Testing
+                    "unittest", "pytest", "nose", "test", "tests", "_pytest",
+                    // Documentation
+                    "sphinx", "docutils", "pydoc",
+                    // Development
+                    "setuptools", "pip", "wheel", "distutils",
+                    // Large optional libs (só exclui se NÃO estiver usando)
+                    "matplotlib", "scipy", "sympy", "IPython", "jupyter",
+                    // Typing (geralmente não precisa em runtime)
+                    "typing_extensions"
+                ];
+                
+                // Detectar o que NÃO está sendo usado
+                var toExclude = [];
+                
+                for(var i=0; i<excludeCandidates.length; i++) {
+                    var mod = excludeCandidates[i];
+                    // Se não encontrar o módulo no código, pode excluir com segurança
+                    if(content.indexOf(mod) == -1) {
+                        toExclude.push(mod);
+                    }
+                }
+                
+                if(toExclude.length > 0) {
+                    var result = toExclude.join(" ");
+                    document.getElementById("txtExclude").value = result;
+                    Log("✓ Scan exclusão: " + toExclude.length + " módulo(s) desnecessário(s) - " + result);
+                    alert("✓ Encontrados " + toExclude.length + " módulo(s) que podem ser excluídos:\n\n" + toExclude.join("\n") + "\n\nIsso pode reduzir significativamente o tamanho do .exe!\n\nCampo preenchido automaticamente!");
+                } else {
+                    Log("ℹ Nenhum módulo grande desnecessário detectado.");
+                    alert("Nenhum módulo grande desnecessário foi detectado.\n\nSeu executável já deve estar otimizado!");
+                }
+                
+            } catch(e) {
+                Log("Erro no scan de exclusões: " + e.message);
+                alert("Erro ao analisar o arquivo: " + e.message);
+            }
+        }
+
+        function AutoInstall() {
+            var reqs = ScanImports();
+            if(reqs) { if(confirm("Instalar: "+reqs+"?")) RunHidden("Instalando", GetEnvInfo().cmd + "pip install " + reqs); }
+            else alert("Nada detectado.");
+        }
+
+        function RunTool(tool) {
+            var f = document.getElementById("fileList").value;
+            var needsFile = !(tool.indexOf("pip freeze") == 0 || tool.indexOf("pip list") == 0);
+            if(needsFile) {
+                if(f) RunHidden("Tool", GetEnvInfo().cmd + tool + ' "' + f + '"');
+                else alert("Selecione um arquivo.");
+            } else {
+                RunHidden("Tool", GetEnvInfo().cmd + tool);
+            }
+        }
+
+        function InstallTools() { RunHidden("Setup Tools", GetEnvInfo().cmd + "pip install pylint black bandit pyinstaller nuitka ordered-set zstandard pillow pyarmor"); }
+        
+        function CleanCache() { 
+            if(confirm("Limpar build?")) {
+                var cmd = 'rmdir /s /q build 2>nul & rmdir /s /q dist 2>nul & rmdir /s /q .build 2>nul & rmdir /s /q .dist 2>nul';
+                cmd += ' & rmdir /s /q nuitka_output 2>nul';
+                cmd += ' & for /d /r %%i in (__pycache__) do rmdir /s /q "%%i" 2>nul';
+                cmd += ' & for /d /r %%i in (*.build) do rmdir /s /q "%%i" 2>nul';
+                cmd += ' & for /d /r %%i in (*.dist) do rmdir /s /q "%%i" 2>nul';
+                cmd += ' & for /d /r %%i in (*.onefile-build) do rmdir /s /q "%%i" 2>nul';
+                cmd += ' & del /q *.spec 2>nul & del /q temp_icon.ico 2>nul';
+                // Remove todas as pastas build_tmp_* criadas pelo build limpo
+                cmd += ' & for /d %%i in (build_tmp_*) do rmdir /s /q "%%i" 2>nul';
+                RunHidden("Limpando Cache de Build", cmd);
+            }
+        }
+
+        function FixPip() { 
+            var env = GetEnvInfo();
+            var cmd = env.type == "venv" ? env.cmd + "python -m pip install --upgrade pip" : (env.type == "global" ? "python" : '"'+env.path+'"') + " -m pip install --upgrade pip";
+            RunHidden("Fix Pip", cmd);
+        }
+
+    </script>
+</head>
+<body onload="Init()">
+
+    <div class="header">
+        <div class="brand">
+            🐍 Py Executer <span>ULTIMATE V2</span>
+        </div>
+        <div id="envStatus" class="env-indicator global" onclick="CheckEnv()" title="Clique para atualizar status">
+            Carregando...
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="sidebar">
+            <div class="panel" style="flex: 1;">
+                <div class="panel-head">Explorador</div>
+                <div class="panel-body" style="height: 100%; padding: 0;">
+                    <select id="fileList" size="10"></select>
+                </div>
+                <div class="panel-body" style="border-top: 1px solid #30363d;">
+                    <div class="btn-group">
+                        <button class="fill" onclick="LoadFiles()">↻</button>
+                        <button class="btn-primary fill" onclick="CreateNew()">+ Novo</button>
+                        <button class="fill" onclick="OpenCode()">📝</button>
+                    </div>
+                    <button onclick="shell.Run('explorer .')">📂 Abrir Pasta</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">Ambiente Python</div>
+                <div class="panel-body">
+                    <select id="cmbPython" onchange="CheckEnv()"></select>
+                    <div class="btn-group">
+                        <button id="btnCreateVenv" class="btn-accent fill" onclick="ToggleVenv('create')">Criar Venv</button>
+                        <button id="btnDelVenv" class="btn-danger fill" onclick="ToggleVenv('delete')" disabled>🗑</button>
+                    </div>
+                    <button onclick="FixPip()">🔧 Reparar Pip</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="tabs">
+                <div id="btn_tabRun" class="tab active" onclick="SwitchTab('tabRun')">▶ EXECUTAR</div>
+                <div id="btn_tabBuild" class="tab" onclick="SwitchTab('tabBuild')">🔨 BUILDER</div>
+                <div id="btn_tabTools" class="tab" onclick="SwitchTab('tabTools')">🛠 TOOLS</div>
+                <div id="btn_tabSettings" class="tab" onclick="SwitchTab('tabSettings')">⚙ SISTEMA</div>
+            </div>
+
+            <!-- TAB RUN -->
+            <div id="tabRun" class="tab-panel active">
+                <div class="panel">
+                    <div class="panel-head">Controles de Execução</div>
+                    <div class="panel-body">
+                        <div class="chk-row">
+                            <input type="checkbox" id="chkInteractive" checked>
+                            <label for="chkInteractive">Modo Interativo (Janela Externa)</label>
+                        </div>
+                        <div class="mt">
+                            <button class="btn-primary" style="width: 100%; padding: 10px; font-size: 13px;" onclick="RunScript()">▶ RODAR SCRIPT</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">Dependências</div>
+                    <div class="panel-body">
+                        <div class="btn-group">
+                            <button class="fill" onclick="alert('Deps: ' + ScanImports())">🔍 Verificar</button>
+                            <button class="btn-accent fill" onclick="AutoInstall()">⬇ Instalar Faltantes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB BUILD -->
+            <div id="tabBuild" class="tab-panel">
+                <div class="panel">
+                    <div class="panel-head">Compilador EXE</div>
+                    <div class="panel-body">
+                        
+                        <!-- SEÇÃO VERDE: Seleção e Configuração -->
+                        <div class="build-section select">
+                            <div class="build-section-title">✓ SELEÇÃO DE SAÍDA E ÍCONE</div>
+                            <div class="build-grid">
+                                <div class="build-row">
+                                    <label>🎯 FORMATO DE SAÍDA</label>
+                                    <select id="cmbBuildMode">
+                                        <option value="--onefile">📦 Arquivo Único (.exe)</option>
+                                        <option value="--onedir">📁 Pasta com DLLs</option>
+                                    </select>
+                                </div>
+                                <div class="build-row">
+                                    <label>🖼 ÍCONE DO EXE</label>
+                                    <button onclick="SelectIcon()" style="width: 100%;">Selecionar Ícone (.ico/.png/.jpg)</button>
+                                    <input type="file" id="fileIcon" style="display:none" onchange="SetIcon()" accept=".ico,.png,.jpg">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SEÇÃO VERDE: Inclusão de Módulos -->
+                        <div class="build-section select">
+                            <div class="build-section-title">➕ INCLUIR MÓDULOS ADICIONAIS</div>
+                            <div class="build-row">
+                                <label>📦 COLLECT (Incluir tudo do módulo)</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="txtCollect" placeholder="Ex: tkinter pygame cv2" style="flex: 1;">
+                                    <button onclick="SmartScanCollects()" style="width: 70px; padding: 6px;" title="Analisa o arquivo e sugere módulos para collect">🔍 Scan</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SEÇÃO VERMELHA: Exclusão de Módulos -->
+                        <div class="build-section remove">
+                            <div class="build-section-title">✖ REMOVER MÓDULOS DESNECESSÁRIOS</div>
+                            <div class="build-row">
+                                <label>🗑 EXCLUDE (Reduzir tamanho do .exe)</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="txtExclude" placeholder="Ex: unittest test matplotlib" style="flex: 1;">
+                                    <button onclick="SmartScanExcludes()" style="width: 70px; padding: 6px;" title="Sugere módulos comuns para excluir e reduzir tamanho">🔍 Scan</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SEÇÃO: Opções de Build -->
+                        <div class="build-section">
+                            <div class="build-section-title">⚙ OPÇÕES DE COMPILAÇÃO</div>
+                            <div class="chk-group-build">
+                                <div class="chk-row">
+                                    <input type="checkbox" id="chkNoConsole" checked>
+                                    <label for="chkNoConsole">🚫 Sem Console (GUI)</label>
+                                </div>
+                                <div class="chk-row">
+                                    <input type="checkbox" id="chkNuitka" onchange="HandleNuitkaToggle()">
+                                    <label for="chkNuitka">⚡ Nuitka (Compilar C++)</label>
+                                </div>
+                                <div class="chk-row">
+                                    <input type="checkbox" id="chkPyArmor">
+                                    <label for="chkPyArmor">🔒 PyArmor (Ofuscar - Pago)</label>
+                                </div>
+                                <div class="chk-row">
+                                    <input type="checkbox" id="chkUpx" onchange="CheckUpxPresence()">
+                                    <label for="chkUpx">📦 UPX (Comprimir)</label>
+                                </div>
+                                <div class="chk-row">
+                                    <input type="checkbox" id="chkCleanBuild">
+                                    <label for="chkCleanBuild">🧹 Build Limpo (Venv temp)</label>
+                                </div>
+                                <div class="chk-row">
+                                    <input type="checkbox" id="chkNuitkaCleanCache" onchange="HandleNuitkaCacheToggle()">
+                                    <label for="chkNuitkaCleanCache">🗑 Limpar Cache Nuitka</label>
+                                </div>
+                            </div>
+                            <div id="upxWarning" class="alert-box" style="display:none; color: #d29922; border-color: #d29922;">
+                                ⚠ UPX pode gerar falsos-positivos em antivírus
+                            </div>
+                            <div id="nuitkaWarning" class="alert-box" style="display:none; color: #58a6ff; border-color: #58a6ff;">
+                                ℹ Nuitka compila para C++ nativo. Cache acelera builds subsequentes.
+                            </div>
+                            <div id="nuitkaCacheWarning" class="alert-box" style="display:none; color: #3fb950; border-color: #3fb950;">
+                                ✓ Cache Nuitka será aproveitado para compilação mais rápida
+                            </div>
+                            <button id="btnDownloadUpx" class="btn-upx" onclick="DownloadUpx()" style="display:none; margin-top: 6px; width: 100%;">
+                                ⬇ Baixar UPX do GitHub
+                            </button>
+                        </div>
+
+                        <!-- BOTÃO FINAL -->
+                        <button class="btn-primary" onclick="BuildExe()">🔨 COMPILAR EXECUTÁVEL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB TOOLS -->
+            <div id="tabTools" class="tab-panel">
+                <div class="panel">
+                    <div class="panel-head">Ferramentas</div>
+                    <div class="panel-body">
+                        <button class="btn-accent" onclick="InstallTools()">⬇ Instalar Kit Dev</button>
+                        <div class="grid-2 mt">
+                            <button onclick="RunTool('pylint')">🔍 Pylint</button>
+                            <button onclick="RunTool('black')">🎨 Black</button>
+                            <button onclick="RunTool('bandit -r')">🔒 Bandit</button>
+                            <button onclick="RunTool('pip freeze')">📜 Pip Freeze</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB SETTINGS -->
+            <div id="tabSettings" class="tab-panel">
+                <div class="panel">
+                    <div class="panel-head">Manutenção</div>
+                    <div class="panel-body">
+                        <button class="btn-danger" onclick="CleanCache()">🧹 Limpar Lixo de Build</button>
+                        <div class="mt">
+                            <label style="font-size: 10px; color: #8b949e;">PIP MANUAL</label>
+                            <div class="btn-group">
+                                <input type="text" id="txtManualPip" placeholder="lib...">
+                                <button onclick="var env=GetEnvInfo(); RunHidden('Pip', env.cmd + 'pip install ' + document.getElementById('txtManualPip').value)">Install</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-head">Sobre</div>
+                    <div class="panel-body" style="text-align: center; font-size: 11px; color: #8b949e;">
+                        <p>Py Executer Ultimate <strong>V2</strong></p>
+                        <p>add Nuitka</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="console-wrapper">
+                <div class="console-header">
+                    <span id="statusMsg">Pronto</span>
+                    <div>
+                        <button class="badge" onclick="document.getElementById('txtConsole').value=''">Limpar</button>
+                        <button class="badge btn-danger" id="btnStop" onclick="StopProcess()" disabled>⛔ PARAR</button>
+                    </div>
+                </div>
+                <textarea id="txtConsole" readonly>Aguardando comando...</textarea>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
